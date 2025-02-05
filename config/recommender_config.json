@@ -1,0 +1,4 @@
+{
+    "embedding_file": "data/processed/all_laptop_embeddings.pkl",
+    "query": "I want a buy 15-inch white laptop with 8GB RAM and 512 SSD"
+}
