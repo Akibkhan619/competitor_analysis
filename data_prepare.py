@@ -6,8 +6,6 @@ from modules.data_ingestor import DataIngestor
 from modules.feature_extractor import FeatureExtractor
 from tqdm import tqdm
 
-from competitor_analysis.modules.swot_analyzer_mistral import SWOTAnalyzer
-
 
 def ensure_dir(directory):
     if not os.path.exists(directory):
@@ -37,14 +35,6 @@ def main():
     feature_extracted_excel = os.path.join(processed_folder, "feature_extracted.xlsx")
     featured_df.to_excel(feature_extracted_excel, index=False)
     print(f"[Main] Feature extracted data saved to {feature_extracted_excel}")
-    
-    # 4. Generate SWOT Analysis using the description column
-    # swot_analyzer = SWOTAnalyzer(model_name="distilgpt2")
-    # final_df = swot_analyzer.generate_swot_for_all(featured_df, desc_col="Cleaned_Description")
-    
-    # final_excel = os.path.join(processed_folder, "final_data.xlsx")
-    # final_df.to_excel(final_excel, index=False)
-    # print(f"[Main] Final data with SWOT saved to {final_excel}")
 
 if __name__ == "__main__":
     main()

@@ -1,28 +1,60 @@
 import os
+import time
 
+import google.generativeai as genai
 import pandas as pd
-from modules.swot_analyzer import SWOTAnalyzer
+from tqdm import tqdm
 
 
-def main():
-    # Define paths
-    processed_folder = "data/processed"
-    input_file = os.path.join(processed_folder, "laptops_data.xlsx")
+class SWOTAnalyzer:
+    def __init__(self, model_name="gemini-1.5-flash", api_key="MY_API_KEY"):
+        # Configure the Gemini API
+        genai.configure(api_key=api_key)
+        self.model = genai.GenerativeModel(model_name)
 
-    # Load data
-    df = pd.read_excel(input_file)
-    print(f"[SWOT] Loaded data from {input_file}")
+    def generate_swot(self, tech_details: str, description: str):
+        # Construct the prompt
+        prompt = (
+            f"Perform a detailed SWOT analysis for the following laptop product.\n\n"
+            f"**Technical Details:** {tech_details}\n"
+            f"**Product Description:** {description}\n\n"
+            f"Provide the SWOT analysis in the following structured format:\n\n"
+            f"**Strengths:** <List key advantages>\n"
+            f"**Weaknesses:** <List key drawbacks>\n"
+            f"**Opportunities:** <Potential improvements or market trends>\n"
+            f"**Threats:** <Potential risks or competition>\n\n"
+            f"Keep the response concise and structured."
+        )
 
-    # Initialize SWOT Analyzer with batch support
-    swot_analyzer = SWOTAnalyzer(model_name="google/flan-t5-large")  # Adjust batch_size based on memory
+        try:
+            # Call Gemini API
+            response = self.model.generate_content(prompt)
+            print(response)
+            return response.text.strip() if response.text else "Error: No response from API"
+        except Exception as e:
+            print(f"Error generating SWOT analysis: {e}")
+            return "Error: API Call Failed"
 
-    # Generate SWOT analysis for each product
-    final_df = swot_analyzer.generate_swot_for_all(df.head(10))
+    def generate_swot_for_all(self, df, tech_col="Cleaned_Tech_Details", desc_col="Cleaned_Description", delay=3):
+        swot_analyses = []
+        for _, row in tqdm(df.iterrows(), total=len(df), desc="Generating SWOT Analyses"):
+            tech_details = row.get(tech_col, "")
+            description = row.get(desc_col, "")
+            swot_analysis = self.generate_swot(tech_details, description)
+            swot_analyses.append(swot_analysis)
+            time.sleep(delay)  # Delay between requests to respect rate limits
+        df['SWOT_Analysis'] = swot_analyses
+        print("[SWOTAnalyzer] SWOT analysis generation complete.")
+        return df
 
-    # Save the updated DataFrame
-    output_file = os.path.join(processed_folder, "final_data_with_swot_analyses_1.xlsx")
-    final_df.to_excel(output_file, index=False)
-    print(f"[Main] Final data with SWOT analyses saved to {output_file}")
-
+# Usage example
 if __name__ == "__main__":
-    main()
+    input_file = "data/processed/laptops_data.xlsx"
+    df = pd.read_excel(input_file)
+
+    swot_analyzer = SWOTAnalyzer()
+    updated_df = swot_analyzer.generate_swot_for_all(df)
+
+    output_file = "outputs/laptops_swot_output.xlsx"
+    updated_df.to_excel(output_file, index=False)
+    print(f"SWOT Analysis saved to {output_file}")
