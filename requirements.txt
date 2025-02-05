@@ -4,7 +4,6 @@ pandas
 torch
 transformers
 sentence-transformers
-faiss-cpu
 scikit-learn
 tqdm
 openpyxl
