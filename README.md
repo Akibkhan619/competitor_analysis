@@ -115,8 +115,9 @@ The system scrapes **laptop product details**, cleans the data, extracts key spe
                      │        End            │
                      └──────────────────────┘
 
----
+```
 
+---
 ## **🛠️ Setup & Usage**
 ### **1️⃣ Install Dependencies**
 ```bash
